@@ -94,7 +94,7 @@ class PurchaseRequest extends AbstractRequest
         }
         return sha1(
             $this->getTransactionId() . $this->getEntranceCode() .
-            $this->getAmountInteger() . $this->getMerchantId() . $this->getMerchantKey()
+            $this->getAmountInteger() . ($this->getShopId() ? $this->getShopId() : '') . $this->getMerchantId() . $this->getMerchantKey()
         );
     }
 
