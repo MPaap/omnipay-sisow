@@ -5,7 +5,8 @@ namespace Omnipay\Sisow\Message;
 class CompletePurchaseRequest extends PurchaseRequest
 {
     protected $endpoint = 'https://www.sisow.nl/Sisow/iDeal/RestHandler.ashx/StatusRequest';
-    
+    protected $transactionReference;
+
     /**
      * {@inheritdoc}
      */
@@ -34,11 +35,20 @@ class CompletePurchaseRequest extends PurchaseRequest
         return $data;
     }
 
+    public function setTransactionReference($reference)
+    {
+        $this->transactionReference = $reference;
+        return $this;
+    }
+
     public function getTransactionReference()
     {
+        if (! is_null($this->transactionReference)) {
+            return $this->transactionReference;
+        }
         return $this->httpRequest->query->get('trxid');
     }
-    
+
     /**
      * {@inheritdoc}
      */
