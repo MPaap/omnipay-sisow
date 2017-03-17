@@ -129,6 +129,7 @@ class PurchaseRequest extends AbstractRequest
             'returnurl' => $this->getReturnUrl(),
             'cancelurl' => $this->getCancelUrl(),
             'notifyurl' => $this->getNotifyUrl(),
+            'callbackurl' => $this->getCallbackUrl(),
             'sha1' => $this->generateSignature(),
             'testmode' => $this->getTestMode(),
         );

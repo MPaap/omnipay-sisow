@@ -45,4 +45,25 @@ abstract class AbstractRequest extends BaseAbstractRequest
     {
         return $this->setParameter('shopId', $value);
     }
+
+    /**
+     * Get the request callback URL.
+     *
+     * @return string
+     */
+    public function getCallbackUrl()
+    {
+        return $this->getParameter('notifyUrl');
+    }
+
+    /**
+     * Sets the request callback URL.
+     *
+     * @param string $value
+     * @return AbstractRequest Provides a fluent interface
+     */
+    public function setCallbackUrl($value)
+    {
+        return $this->setParameter('callbackUrl', $value);
+    }
 }
