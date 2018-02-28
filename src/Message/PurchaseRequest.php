@@ -94,7 +94,7 @@ class PurchaseRequest extends AbstractRequest
         }
         return sha1(
             $this->getTransactionId() . $this->getEntranceCode() .
-            $this->getAmountInteger() . $this->getMerchantId() . $this->getMerchantKey()
+            $this->getAmountInteger() . ($this->getShopId() ? $this->getShopId() : '') . $this->getMerchantId() . $this->getMerchantKey()
         );
     }
 
@@ -129,6 +129,7 @@ class PurchaseRequest extends AbstractRequest
             'returnurl' => $this->getReturnUrl(),
             'cancelurl' => $this->getCancelUrl(),
             'notifyurl' => $this->getNotifyUrl(),
+            'callbackurl' => $this->getCallbackUrl(),
             'sha1' => $this->generateSignature(),
             'testmode' => $this->getTestMode(),
         );
@@ -136,13 +137,13 @@ class PurchaseRequest extends AbstractRequest
         /** @var \Omnipay\Common\CreditCard $card */
         $card = $this->getCard();
         if ($card) {
-            if ($this->getPaymentMethod() == 'overboeking' || $this->getPaymentMethod() == 'klarna') {
+            if ($this->getPaymentMethod() == 'overboeking' || $this->getPaymentMethod() == 'klarna' || $this->getPaymentMethod() == 'afterpay') {
                 $data['billing_mail'] = $card->getEmail();
                 $data['billing_firstname'] = $card->getBillingFirstName();
                 $data['billing_lastname'] = $card->getBillingLastName();
             }
 
-            if ($this->getPaymentMethod() == 'klarna') {
+            if ($this->getPaymentMethod() == 'klarna' || $this->getPaymentMethod() == 'afterpay') {
                 $data['billing_company'] = $card->getBillingCompany();
                 $data['billing_address1'] = $card->getBillingAddress1();
                 $data['billing_address2'] = $card->getBillingAddress2();
@@ -192,17 +193,18 @@ class PurchaseRequest extends AbstractRequest
                 $data['product_id_' . $x] = $item->getName();
                 $data['product_description_' . $x] = $item->getDescription();
                 $data['product_quantity_' . $x] = $item->getQuantity();
-                $data['product_netprice_' . $x] = round(($this->formatCurrency($item->getPrice()) / 121 * 100) * 100);
+                $data['product_netprice_' . $x] = round(($this->formatCurrency($item->getPrice()) / (100+$item->getVat()) * 100) * 100);
                 $data['product_total_' . $x] = round(
-                    $this->formatCurrency($item->getPrice()) * $item->getQuantity() * 100
+                    $this->formatCurrency($item->getPrice()) * $item->getQuantity() * 100 + $this->formatCurrency($item->getShipping()) * 100
                 );
                 $data['product_nettotal_' . $x] = round(
-                    ($this->formatCurrency($item->getPrice()) / 121 * 100) * $item->getQuantity() * 100
+                    ($this->formatCurrency($item->getPrice()) / (100+$item->getVat()) * 100) * $item->getQuantity() * 100
                 );
 
                 //@todo fix tax rates
-                $data['product_tax_' . $x] = round(($this->formatCurrency($item->getPrice()) / 121 * 21) * 100);
-                $data['product_taxrate_' . $x] = 21 * 100;
+                $data['product_tax_' . $x] = round(($this->formatCurrency($item->getPrice()) / (100+$item->getVat()) * $item->getVat()) * 100);
+                $data['product_taxrate_' . $x] = $item->getVat() * 100;
+                $data['product_shipping_' . $x] = round($this->formatCurrency($item->getShipping()) * 100);
             }
         }
 
